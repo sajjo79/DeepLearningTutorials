@@ -2,9 +2,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 #===============================================================================================
 def getdata():
+    #60000,28,28         10000,28,28    10 categories
     (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.mnist.load_data()
+    print(train_images.shape,train_labels.shape)
+    print(test_images.shape,test_labels.shape)
     return train_images,train_labels,test_images,test_labels
 
 def preprocess(train_images,train_labels,test_images,test_labels):
@@ -12,8 +16,12 @@ def preprocess(train_images,train_labels,test_images,test_labels):
     test_labels = test_labels[:1000]
     print(train_images.shape)
     print(test_images.shape)
-    train_images = train_images[:1000].reshape(-1, 28 * 28) / 255.0
+    print(np.max(train_images),np.min(train_images))
+    print(np.max(test_images), np.min(test_images))
+    train_images = train_images[:1000].reshape(-1, 28 * 28) / 255.0 #(10000,784) (0-1)
     test_images = test_images[:1000].reshape(-1, 28 * 28) / 255.0
+    print(np.max(train_images), np.min(train_images))
+    print(np.max(test_images), np.min(test_images))
     print(train_images.shape)
     print(test_images.shape)
     return train_images,train_labels,test_images,test_labels
@@ -38,8 +46,8 @@ def train_model(model,train_images,train_labels):
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
                                                      save_weights_only=True,
                                                      verbose=1)
-    model.fit(train_images,             # Train the model with the new callback
-              train_labels,
+    model.fit(x=train_images,             # Train the model with the new callback
+              y=train_labels,
               epochs=10,
               validation_data=(test_images, test_labels),
               callbacks=[cp_callback])  # Pass callback to training
@@ -74,33 +82,31 @@ def train_model_2(model,train_images,train_labels):
     return model,latest
 
 
-
-
 if __name__=="__main__":
     train_images,train_labels,test_images,test_labels=getdata()
     train_images,train_labels,test_images,test_labels=preprocess(train_images,train_labels,test_images,test_labels)
     model_1=create_n_compile_model()
     trained_model,checkpoint_path=train_model(model_1,train_images,train_labels)
-
+    #
     model_2 = create_n_compile_model()
     evaluate_model("Untrained Model ",model_2, test_images, test_labels)
     model_2=load_weights(model_2, checkpoint_path)
     evaluate_model("Restored Model ", model_2, test_images, test_labels)
-
+    #
     model_3=create_n_compile_model()
     trained_model_3,latest=train_model_2(model_3, train_images, train_labels)
-
+    #
     model_4 = create_n_compile_model()
     model_4.load_weights(latest)
     evaluate_model("Restored Model ",model_4,test_images,test_labels)
-
+    #
     model_5 = create_n_compile_model()
     model_5,checkpoint_path=train_model(model_5,train_images,train_labels)
     model_5.save_weights('./checkpoints/my_checkpoint')
     model_6 = create_n_compile_model()
     model_6.load_weights('./checkpoints/my_checkpoint')
     evaluate_model("Restored Model ",model_6,test_images,test_labels)
-
+    #
     model_7 = create_n_compile_model()
     model_7.fit(train_images, train_labels, epochs=5)
     model_7.save('my_model.h5')
@@ -108,7 +114,6 @@ if __name__=="__main__":
     print(new_model.summary())
     evaluate_model("Restored Model",new_model,test_images,test_labels)
 
-
-
-
-
+    # Assignment 2: display the training histories as we did in lecture 5.
+    # improve the model by incorporating more layers, regularization and display its histories
+    # save your trained model and weights, restore them also in your improved version of this program
