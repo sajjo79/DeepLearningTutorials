@@ -52,9 +52,6 @@ class Prepare_Data():
         print('global',max_left,min_right,max_top,min_bottom)
         return max_left,min_right,max_top,min_bottom
 
-
-
-
 if __name__=="__main__":
     pd=Prepare_Data()
     pd.Crop_to_Tight_Bounds()
